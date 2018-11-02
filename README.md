@@ -177,6 +177,14 @@ S: 235 2.7.0 Authentication successful
 
 ## Django 配置(>=2.1)
 
+### 依赖
+
+- rest_framework
+- corsheaders
+- django-filter
+- requests
+- avatar-generator
+
 `settings.py 需要的配置`
 
 ```config
