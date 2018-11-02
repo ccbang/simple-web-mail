@@ -38,10 +38,10 @@ screenshot
 .firebase
 
 # mock
-mock/**
+site/mock/**
 
 
 # django
-media/**
-migrations/**
+backen/media/**
+backen/emailbox/migrations/**
 *.pyc
