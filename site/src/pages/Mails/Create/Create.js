@@ -3,6 +3,7 @@ import { connect } from 'dva';
 import { Form, Input, Select, Button, Card, Upload, Icon, Layout } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import QuillEditor from '@/components/Editor/QuillEditor';
+import { getToken } from '@/utils/authority';
 import RightFrend from './RightFrend';
 
 const FormItem = Form.Item;
@@ -78,10 +79,11 @@ class MailCreate extends PureComponent {
   handleSaveDraft = () => {
     const { dispatch, form } = this.props;
     const { fileList, content_html, content_text } = this.state;
+    const fileIDList = fileList.map(one => one.response.id);
     const values = form.getFieldsValue();
     dispatch({
       type: 'mail/saveDraft',
-      payload: { ...values, file_list: fileList, content_html, content_text },
+      payload: { ...values, file_list: fileIDList, content_html, content_text },
     });
   };
 
@@ -110,14 +112,17 @@ class MailCreate extends PureComponent {
     const { getFieldDecorator } = form;
 
     const { canPost, data } = this.state;
+
+    const token = getToken();
     const uploadSetting = {
       name: 'file',
       action: '/api/upload/',
       headers: {
-        authorization: 'authorization-text',
+        authorization: `Bearer ${token}`,
       },
       onChange: this.handleChange,
     };
+    const uploadList = current.xFiles || [];
     return (
       <PageHeaderWrapper>
         <Layout>
@@ -193,7 +198,7 @@ class MailCreate extends PureComponent {
                     rules: [{ required: true, message: '请填写邮件内容' }],
                   })(
                     <QuillEditor
-                      data={current.content_html || data}
+                      data={current.body && current.body.content ? current.body.content : data}
                       isEditor
                       onCanPost={this.handleCanPost}
                       canPost={canPost}
@@ -202,7 +207,7 @@ class MailCreate extends PureComponent {
                   )}
                 </FormItem>
                 <FormItem wrapperCol={{ span: 22, offset: 2 }}>
-                  <Upload {...uploadSetting}>
+                  <Upload {...uploadSetting} defaultFileList={uploadList}>
                     <Button>
                       <Icon type="link" theme="outlined" />
                       增加附件

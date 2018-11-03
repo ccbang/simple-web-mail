@@ -38,21 +38,23 @@ def create_email(username, **kwargs):
     files = kwargs.get("file_list", None)
     if files is not None and isinstance(files, list):
         # 如果有附件，将附加到邮件中
+        print(files)
+        msg.add_header('X-FILE-LIST', ','.join([str(i) for i in files]))
         for one_pk in files:
             one_objs = UploadFile.objects.filter(pk=one_pk)
             if not one_objs.exists():
                 continue
             one_obj = one_objs.first()
-            ctype, encoding = mimetypes.guess_type(one_obj.name)
+            ctype, encoding = mimetypes.guess_type(one_obj.filename)
             if ctype is None or encoding is not None:
                 ctype = 'application/octet-stream'
             maintype, subtype = ctype.split('/', 1)
-            with one_obj.open('rb') as fp:
+            with one_obj.file.open('rb') as fp:
                 msg.add_attachment(
                     fp.read(),
                     maintype=maintype,
                     subtype=subtype,
-                    filename=one_obj.name
+                    filename=one_obj.filename
                 )
     return msg
 

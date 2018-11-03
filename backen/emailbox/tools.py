@@ -8,6 +8,7 @@ from datetime import datetime
 from django.conf import settings
 from rest_framework.authtoken.models import Token
 from emailbox.smtp_tools import generate_oAuth2_string
+from emailbox.models import UploadFile
 import pytz
 import re
 import time
@@ -109,6 +110,23 @@ class MyMail:
             # })
         return body, has_file
 
+    def x_files(self, mail):
+        files = mail.get_all('x-file-list', [])
+        result = []
+        for one in files:
+            try:
+                obj = UploadFile.objects.get(pk=one)
+                result.append({
+                    "id":obj.id,
+                    "uid":obj.id,
+                    "name": obj.filename,
+                    "url": obj.file.url,
+                    "status": "done"
+                })
+            except Exception as e:
+                print(e)
+        return result
+
     def get_from(self, mail):
         # 获取邮件发送人
         _, from_addr = email.utils.parseaddr(mail.get("From"))
@@ -155,6 +173,7 @@ class MyMail:
             "dateTime": self.get_date_time(email_message),
             "bcc": self.get_bcc(email_message),
             "cc": self.get_cc(email_message),
+            "xFiles": self.x_files(email_message),
         }
         mail_body, has_file = self.get_body(email_message)
         if not get_body:
@@ -192,7 +211,10 @@ class MyMail:
             response_data, *_ = response
             info, data, *_ = response_data
             flags = self.get_flags(info)
-            one_mail = self.get_mail_info(data, get_body=False)
+            if mail_box.upper() == 'DRAFT':
+                one_mail = self.get_mail_info(data)
+            else:
+                one_mail = self.get_mail_info(data, get_body=False)
             one_mail.update({"id": int(num.decode())})
             one_mail.update({"flags": flags})
             ret.append(one_mail)

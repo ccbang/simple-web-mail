@@ -81,9 +81,7 @@ class ViewDetail extends Component {
     return current.body.files.map(oneFile => {
       const newOne = { ...oneFile };
       if (newOne.partNumber) {
-        newOne.url = `http://192.168.2.213:8000/mails/file/${current.id}/?part=${
-          newOne.partNumber
-        }`;
+        newOne.url = `/api/file/${current.id}/?part=${newOne.partNumber}`;
         newOne.status = 'done';
         newOne.uid = newOne.partNumber;
       }
@@ -164,7 +162,6 @@ class ViewDetail extends Component {
       </DescriptionList>
     );
     const fileList = this.getFileList();
-    console.log(current);
     return (
       <PageHeaderWrapper
         title={current.subject || `(无标题)`}
